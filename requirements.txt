@@ -1,0 +1,5 @@
+google-cloud-bigquery
+google-auth
+google-adk
+pandas
+python-dotenv
