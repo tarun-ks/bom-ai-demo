@@ -12,11 +12,6 @@ Example use cases:
 - Identify assemblies with obsolete components  
 - Fetch Country of Origin (COO) for components  
 
-### 📋 Demo Documentation
-- **[Executive Summary](DEMO_EXECUTIVE_SUMMARY.md)** - Quick overview for stakeholders (2-page pre-read)
-- **[Detailed Use Cases](DEMO_USE_CASES.md)** - Complete demo scenarios and sample questions
-
----
 
 ## 🧱 Project Structure
 
