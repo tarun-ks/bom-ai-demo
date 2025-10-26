@@ -1,5 +1,6 @@
 -- =========================================================
 -- bom-ai-demo : BigQuery schema and data for AI Agent PoC
+-- Comprehensive BOM System with Realistic Manufacturing Data
 -- =========================================================
 
 -- 1️⃣ Create dataset (run only once)
@@ -9,47 +10,80 @@ CREATE SCHEMA IF NOT EXISTS `<YOUR_PROJECT_ID>.bom_demo`
 OPTIONS(location = 'us-central1');
 
 -- 2️⃣ Drop existing tables
-DROP TABLE IF EXISTS `<YOUR_PROJECT_ID>.bom_demo.product_master`;
-DROP TABLE IF EXISTS `<YOUR_PROJECT_ID>.bom_demo.bom_component_map`;
+DROP TABLE IF EXISTS `<YOUR_PROJECT_ID>.bom_demo.item_master`;
+DROP TABLE IF EXISTS `<YOUR_PROJECT_ID>.bom_demo.bom_details`;
 
--- 3️⃣ Create Product Master
-CREATE TABLE `<YOUR_PROJECT_ID>.bom_demo.product_master` (
-  product_id STRING,
-  product_name STRING,
+-- 3️⃣ Create Item Master Table (ODW - No Foreign Keys)
+-- Note: In data warehouses, FK constraints are typically not defined for performance
+CREATE TABLE `<YOUR_PROJECT_ID>.bom_demo.item_master` (
+  item_number STRING,
+  item_description STRING,
+  item_type STRING,
   category STRING,
+  uom STRING,
+  weight NUMERIC,
+  dimensions STRING,
+  color STRING,
+  material STRING,
+  manufacturer STRING,
+  manufacturer_part_number STRING,
+  supplier_code STRING,
+  supplier_part_number STRING,
+  lead_time_days INT64,
+  minimum_order_quantity NUMERIC,
+  unit_cost NUMERIC,
+  currency STRING,
+  country_of_origin STRING,
+  compliance_status STRING,
   is_serialized BOOL,
   is_npi BOOL,
+  is_obsolete BOOL,
   status STRING,
-  country_of_origin STRING,
-  last_updated DATE
-);
+  created_date DATE,
+  last_modified_date DATE,
+  revision STRING,
+  notes STRING
+)
+PARTITION BY created_date
+CLUSTER BY item_type, category, status;
 
--- 4️⃣ Create BOM Component Map
-CREATE TABLE `<YOUR_PROJECT_ID>.bom_demo.bom_component_map` (
+-- 4️⃣ Create BOM Details Table (ODW - No Foreign Keys)
+-- Note: Relationships are maintained through data integrity, not FK constraints
+CREATE TABLE `<YOUR_PROJECT_ID>.bom_demo.bom_details` (
   bom_id STRING,
-  assembly_id STRING,
-  component_id STRING,
+  parent_item_number STRING,
+  component_item_number STRING,
   quantity NUMERIC,
+  quantity_unit STRING,
+  sequence_number INT64,
+  supply_type STRING,
+  sourcing_type STRING,
+  supplier_code STRING,
+  supplier_part_number STRING,
+  lead_time_days INT64,
   effective_date DATE,
-  is_active BOOL
-);
+  expiration_date DATE,
+  is_active BOOL,
+  is_optional BOOL,
+  is_phantom BOOL,
+  scrap_factor NUMERIC,
+  yield_factor NUMERIC,
+  setup_time_minutes INT64,
+  cycle_time_minutes INT64,
+  labor_hours NUMERIC,
+  tooling_required STRING,
+  special_instructions STRING,
+  quality_requirements STRING,
+  test_requirements STRING,
+  packaging_requirements STRING,
+  created_by STRING,
+  created_date DATE,
+  last_modified_by STRING,
+  last_modified_date DATE,
+  revision STRING,
+  approval_status STRING,
+  notes STRING
+)
+PARTITION BY effective_date
+CLUSTER BY parent_item_number, bom_id, is_active;
 
--- 5️⃣ Sample Data
-INSERT INTO `<YOUR_PROJECT_ID>.bom_demo.product_master` VALUES
-('P1001', 'Electric Bike', 'ASSEMBLY', FALSE, FALSE, 'ACTIVE', 'USA', '2025-01-01'),
-('P1002', 'Smart Scooter', 'ASSEMBLY', FALSE, FALSE, 'ACTIVE', 'Germany', '2025-02-01'),
-('P2001', 'Lithium Battery', 'BATTERY', FALSE, TRUE, 'ACTIVE', 'China', '2025-01-10'),
-('P2002', 'Motor Controller', 'ELECTRONICS', TRUE, FALSE, 'ACTIVE', 'Vietnam', '2025-02-01'),
-('P2003', 'Aluminum Frame', 'FRAME', FALSE, FALSE, 'ACTIVE', 'USA', '2025-03-01'),
-('P2004', 'Display Panel', 'DISPLAY', TRUE, TRUE, 'OBSOLETE', 'Vietnam', '2024-12-01'),
-('P3001', 'Memory Module', 'MEMORY', FALSE, TRUE, 'ACTIVE', 'Korea', '2025-03-15'),
-('P3002', 'Hard Drive', 'STORAGE', FALSE, FALSE, 'ACTIVE', 'Malaysia', '2025-03-10');
-
-INSERT INTO `<YOUR_PROJECT_ID>.bom_demo.bom_component_map` VALUES
-('BOM1001', 'P1001', 'P2001', 1, '2025-01-01', TRUE),
-('BOM1001', 'P1001', 'P2002', 1, '2025-01-01', TRUE),
-('BOM1001', 'P1001', 'P2003', 1, '2025-01-01', TRUE),
-('BOM1001', 'P1001', 'P2004', 1, '2025-02-01', TRUE),
-('BOM2001', 'P1002', 'P2001', 1, '2025-02-01', TRUE),
-('BOM2001', 'P1002', 'P3001', 1, '2025-02-10', TRUE),
-('BOM2001', 'P1002', 'P3002', 1, '2025-03-01', TRUE);

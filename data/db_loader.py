@@ -16,7 +16,7 @@ if not PROJECT_ID:
     raise ValueError("GCP_PROJECT_ID environment variable is required. Please set it in your .env file.")
 
 print(f"🚀 Initializing BigQuery client for project: {PROJECT_ID}")
-client = bigquery.Client(project=PROJECT_ID)
+client = bigquery.Client(project=PROJECT_ID, location=BQ_LOCATION)
 
 # Execute the SQL file
 with open("data/create_bom_schema.sql", "r") as f:

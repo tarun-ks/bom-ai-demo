@@ -3,3 +3,5 @@ google-auth
 google-adk
 pandas
 python-dotenv
+google-cloud-discoveryengine
+google-cloud-discoveryengine
