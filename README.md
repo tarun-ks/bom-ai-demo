@@ -12,10 +12,6 @@ Example use cases:
 - Identify assemblies with obsolete components  
 - Fetch Country of Origin (COO) for components  
 
-### 📋 Demo Documentation
-- **[Executive Summary](DEMO_EXECUTIVE_SUMMARY.md)** - Quick overview for stakeholders (2-page pre-read)
-- **[Detailed Use Cases](DEMO_USE_CASES.md)** - Complete demo scenarios and sample questions
-
 ---
 
 ## 🧱 Project Structure
@@ -28,15 +24,14 @@ Example use cases:
 │   ├── item_master.csv                 # Sample item master data (500+ rows)
 │   ├── bom_details.csv                 # Sample BOM details data (500+ rows)
 │   ├── field_mapping_documentation.md  # Schema documentation for RAG
-│   └── query_patterns_documentation.md # Query templates for reuse
+│   ├── query_patterns_documentation.md # Query templates for reuse
+│   └── index_schema_to_vertex.py       # Script to index docs into Vertex AI Search
 ├── bom_simple_agentic_demo/
 │   └── agent.py                        # Demo 1: Basic single agent
 ├── bom_agentic_demo_with_rag/
 │   └── agent.py                        # Demo 2: Single agent with RAG
 ├── bom_multi_agents_demo/
-│   ├── agent.py                        # Demo 3: Multi-agent pipeline
-│   └── tools/
-│       └── schema_cards.py             # Custom schema discovery tools
+│   └── agent.py                        # Demo 3: Multi-agent pipeline
 ├── requirements.txt
 ├── README.md
 ├── .env.example                        # Environment template
@@ -160,3 +155,78 @@ This project includes **three progressive implementations** to showcase differen
 - Which products have the highest total component cost?
 
 
+---
+
+## 🚀 Run in Cloud Shell (no local setup)
+
+You can run the full demo directly in Google Cloud Shell.
+
+### 1) Start Cloud Shell
+- Open Google Cloud Console → Cloud Shell (top-right terminal icon)
+- Clone and enter the repo:
+```bash
+git clone https://github.com/tarun-ks/bom-ai-demo.git
+cd bom-ai-demo
+```
+
+### 2) Configure environment
+```bash
+python3 -m venv venv && source venv/bin/activate
+pip install --no-cache-dir -r requirements.txt
+
+# Create .env (or export directly in the shell)
+cp .env.example .env
+sed -i "" "s/^GCP_PROJECT_ID=.*/GCP_PROJECT_ID=$(gcloud config get-value project)/" .env || true
+
+# Authenticate (ADC used by BigQuery/RAG tools)
+gcloud auth application-default login
+```
+
+### 3) Load sample schema and data (optional)
+```bash
+python data/db_loader.py
+python data/csv_loader.py
+```
+
+### 4) Launch ADK Web
+```bash
+adk web --host 0.0.0.0 --port 8080
+```
+Cloud Shell will show a Web Preview link (port 8080). Open it and select one of the agents.
+
+---
+
+## 📚 Index schema docs into Vertex AI Search (RAG)
+
+Index `data/field_mapping_documentation.md` (and optionally `data/query_patterns_documentation.md`) into Vertex AI Search using the script.
+
+### Prereqs
+- Enable Discovery Engine API
+- Either set a full `RAG_DATA_STORE_ID` or pass `--data_store_id`
+
+`RAG_DATA_STORE_ID` format:
+```
+projects/$GCP_PROJECT_ID/locations/global/collections/default_collection/dataStores/bom-schema-store
+```
+
+### Run the script
+```bash
+export GCP_PROJECT_ID=<your-project>
+
+# Option A: Use existing RAG_DATA_STORE_ID from .env
+python data/index_schema_to_vertex.py \
+  --file data/field_mapping_documentation.md
+
+# Option B: Create/ensure a data store and index
+python data/index_schema_to_vertex.py \
+  --file data/field_mapping_documentation.md \
+  --data_store_id bom-schema-store \
+  --location global
+
+# Multiple files
+python data/index_schema_to_vertex.py \
+  --file data/field_mapping_documentation.md data/query_patterns_documentation.md \
+  --data_store_id bom-schema-store --location global
+```
+
+The script validates/creates the data store, chunks markdown by headers, and upserts chunks into Vertex AI Search for RAG.

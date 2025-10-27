@@ -23,7 +23,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 PROMPT = f"""
 You are a BOM data analyst. You need to answers questions about the BOM tables using the item_master and bom_details tables.
-Use Discovery Engine search for schema context when available, and use the BigQuery tools to answer questions about the `{PROJECT_ID}.{DATASET_ID}` dataset.
+Use the BigQuery tools to answer questions about the `{PROJECT_ID}.{DATASET_ID}` dataset.
 Return concise answers in plain English.
 When you run a BigQuery query, append a short 'SQL used' section with a fenced SQL block of the final query.
 """
