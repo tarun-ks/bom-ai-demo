@@ -162,10 +162,10 @@ This project includes **three progressive implementations** to showcase differen
 ## Example Queries
 
 ### Basic BOM Analysis
-- List all serialized components in BOM1001
+- List all serialized components in BOM039
 - Show NPI components in Smart Scooter
 - Find assemblies that have obsolete components
-- Get COO of components in BOM2001
+- Get COO of components in BOM001
 - List BOMs using battery or memory components
 
 ### Advanced Manufacturing Analytics
