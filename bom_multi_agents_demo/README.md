@@ -1,7 +1,7 @@
 # Multi-Agent Pipeline Demo
 
 ## Overview
-Production-ready multi-agent system with schema search, column verification, and self-healing query retry logic.
+Multi-agent system with schema search, column verification, and self-healing query retry logic.
 
 ## Data Flow
 
@@ -95,3 +95,4 @@ RAG_DATA_STORE_ID=projects/.../dataStores/... (optional)
 adk web
 # Select: bom_multi_agents_demo
 ```
+
