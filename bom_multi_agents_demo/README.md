@@ -78,9 +78,9 @@ Multi-agent system with schema search, column verification, and self-healing que
 ```
 
 ## When to Use
-- Production deployments
+- 
 - Complex queries with edge cases
-- Enterprise-grade reliability
+- Higher reliability
 
 ## Environment Variables
 ```bash
@@ -95,4 +95,5 @@ RAG_DATA_STORE_ID=projects/.../dataStores/... (optional)
 adk web
 # Select: bom_multi_agents_demo
 ```
+
 
