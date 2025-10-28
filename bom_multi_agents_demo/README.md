@@ -35,7 +35,7 @@ Multi-agent system with schema search, column verification, and self-healing que
 ┌─────────────────────────────────────────────────────────────┐
 │                Loop Agent (Max 3 Iterations)               │
 │                                                             │
-│  ┌───────────────────────────────────────────────┐Friday   │
+│  ┌───────────────────────────────────────────────┐   │
 │  │  Agent 3a: Query Planner                     │        │
 │  │  • Strategy 1: Exact match (LOWER)            │        │
 │  │  • Strategy 2: Regex (plural/singular)       │        │
@@ -43,7 +43,7 @@ Multi-agent system with schema search, column verification, and self-healing que
 │  └───────────────┬───────────────────────────────┘        │
 │                  │                                         │
 │                  ▼                                         │
-│  ┌───────────────────────────────────────────────┐Saturday│
+│  ┌───────────────────────────────────────────────┐│
 │  │  Agent 3b: Query Executor                     │        │
 │  │  • Executes SQL                               │        │
 │  │  • Results > 0? → exit_loop ✅                │        │
@@ -95,5 +95,6 @@ RAG_DATA_STORE_ID=projects/.../dataStores/... (optional)
 adk web
 # Select: bom_multi_agents_demo
 ```
+
 
 
