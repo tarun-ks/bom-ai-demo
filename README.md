@@ -56,6 +56,8 @@ gcloud auth application-default login
 
 ### 2️⃣ Install & Run
 
+**Option A: Run Locally**
+
 ```bash
 git clone https://github.com/<yourname>/bom-ai-demo.git
 cd bom-ai-demo
@@ -64,16 +66,56 @@ pip install -r requirements.txt
 
 # Copy and configure environment variables
 cp .env.example .env
-# Edit .env file with your GCP project ID
+# Edit .env file with your GCP project ID and GOOGLE_API_KEY
 
 # Load schema and data
 python data/db_loader.py
-
-# Load CSV data into BigQuery
 python data/csv_loader.py
+
+# Optional: Setup RAG (for RAG-enhanced agents)
+gcloud services enable discoveryengine.googleapis.com --project=<your-project>
+python data/index_schema_to_vertex.py \
+  --file data/field_mapping_documentation.md \
+  --data_store_id bom-schema-store \
+  --location global
 
 # Run ADK Web (opens UI at http://localhost:8000)
 adk web
+```
+
+**Option B: Run in Cloud Shell**
+
+```bash
+# Start Cloud Shell in Google Cloud Console
+git clone https://github.com/tarun-ks/bom-ai-demo.git
+cd bom-ai-demo
+
+# Setup environment
+python3 -m venv venv && source venv/bin/activate
+pip install --no-cache-dir -r requirements.txt
+
+# Configure .env
+cp .env.example .env
+PROJECT_ID=$(gcloud config get-value project)
+sed -i "s/^GCP_PROJECT_ID=.*/GCP_PROJECT_ID=$PROJECT_ID/" .env
+
+# Add GOOGLE_API_KEY to .env (get from Google AI Studio)
+echo "GOOGLE_API_KEY=your-api-key-here" >> .env
+
+# Load schema and data
+python data/db_loader.py
+python data/csv_loader.py
+
+# Optional: Setup RAG (for RAG-enhanced agents)
+gcloud services enable discoveryengine.googleapis.com --project=$PROJECT_ID
+python data/index_schema_to_vertex.py \
+  --file data/field_mapping_documentation.md \
+  --data_store_id bom-schema-store \
+  --location global
+
+# Run ADK Web
+adk web
+# Use Cloud Shell Web Preview (port 8080)
 ```
 
 ### 3️⃣ Environment Variables
@@ -86,8 +128,8 @@ Required variables:
 - `GCP_PROJECT_ID`: Your Google Cloud Project ID
 - `BQ_DATASET_ID`: BigQuery dataset name (default: bom_demo)
 - `BQ_LOCATION`: BigQuery location (default: us-central1)
-- `GOOGLE_API_KEY`: Google AI API key (for simple/RAG demos)
-- `RAG_DATA_STORE_ID`: Vertex AI Search data store ID (for RAG demos)
+- `GOOGLE_API_KEY`: Google AI API key (get from [Google AI Studio](https://aistudio.google.com/app/apikey))
+- `RAG_DATA_STORE_ID`: Vertex AI Search data store ID (auto-generated during RAG setup)
 
 ---
 
@@ -157,76 +199,11 @@ This project includes **three progressive implementations** to showcase differen
 
 ---
 
-## 🚀 Run in Cloud Shell (no local setup)
+## 🔑 Getting Your Google AI API Key
 
-You can run the full demo directly in Google Cloud Shell.
-
-### 1) Start Cloud Shell
-- Open Google Cloud Console → Cloud Shell (top-right terminal icon)
-- Clone and enter the repo:
-```bash
-git clone https://github.com/tarun-ks/bom-ai-demo.git
-cd bom-ai-demo
-```
-
-### 2) Configure environment
-```bash
-python3 -m venv venv && source venv/bin/activate
-pip install --no-cache-dir -r requirements.txt
-
-# Create .env (or export directly in the shell)
-cp .env.example .env
-sed -i "" "s/^GCP_PROJECT_ID=.*/GCP_PROJECT_ID=$(gcloud config get-value project)/" .env || true
-
-# Authenticate (ADC used by BigQuery/RAG tools)
-gcloud auth application-default login
-```
-
-### 3) Load sample schema and data (optional)
-```bash
-python data/db_loader.py
-python data/csv_loader.py
-```
-
-### 4) Launch ADK Web
-```bash
-adk web --host 0.0.0.0 --port 8080
-```
-Cloud Shell will show a Web Preview link (port 8080). Open it and select one of the agents.
-
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account
+3. Click "Create API Key"
+4. Copy the generated key
+5. Add it to your `.env` file as `GOOGLE_API_KEY=your-key-here`
 ---
-
-## 📚 Index schema docs into Vertex AI Search (RAG)
-
-Index `data/field_mapping_documentation.md` (and optionally `data/query_patterns_documentation.md`) into Vertex AI Search using the script.
-
-### Prereqs
-- Enable Discovery Engine API
-- Either set a full `RAG_DATA_STORE_ID` or pass `--data_store_id`
-
-`RAG_DATA_STORE_ID` format:
-```
-projects/$GCP_PROJECT_ID/locations/global/collections/default_collection/dataStores/bom-schema-store
-```
-
-### Run the script
-```bash
-export GCP_PROJECT_ID=<your-project>
-
-# Option A: Use existing RAG_DATA_STORE_ID from .env
-python data/index_schema_to_vertex.py \
-  --file data/field_mapping_documentation.md
-
-# Option B: Create/ensure a data store and index
-python data/index_schema_to_vertex.py \
-  --file data/field_mapping_documentation.md \
-  --data_store_id bom-schema-store \
-  --location global
-
-# Multiple files
-python data/index_schema_to_vertex.py \
-  --file data/field_mapping_documentation.md data/query_patterns_documentation.md \
-  --data_store_id bom-schema-store --location global
-```
-
-The script validates/creates the data store, chunks markdown by headers, and upserts chunks into Vertex AI Search for RAG.
